@@ -17,7 +17,7 @@ export interface AuthData {
   employeeId?: string;
 }
 
-const auth = authHandler<AuthParams, AuthData>(
+export const auth = authHandler<AuthParams, AuthData>(
   async (data) => {
     const token = data.authorization?.replace("Bearer ", "");
     if (!token) {
@@ -51,5 +51,3 @@ const auth = authHandler<AuthParams, AuthData>(
     }
   }
 );
-
-export { auth };
