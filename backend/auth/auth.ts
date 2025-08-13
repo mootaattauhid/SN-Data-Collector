@@ -3,7 +3,7 @@ import { Header, APIError } from "encore.dev/api";
 import { secret } from "encore.dev/config";
 import { authDB } from "./db";
 import * as bcrypt from "bcrypt";
-import * as jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
 const jwtSecret = secret("JWTSecret");
 
