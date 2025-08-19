@@ -149,7 +149,55 @@ async function processAndStoreData(
     const rowData = line.trim().split('\t');
     if (rowData.length < 2) continue;
 
-    const timestamp = new Date(rowData[1].replace(' ', 'T'));
+    // Parse timestamp from solutioncloud format
+    // Expected format from solutioncloud: "YYYY-MM-DD HH:MM:SS" or similar
+    const timestampStr = rowData[1].trim();
+    let timestamp: Date;
+    
+    try {
+      // Try different timestamp formats that might come from solutioncloud
+      if (timestampStr.includes('/')) {
+        // Format: DD/MM/YYYY HH:MM:SS or MM/DD/YYYY HH:MM:SS
+        const parts = timestampStr.split(' ');
+        const datePart = parts[0];
+        const timePart = parts[1] || '00:00:00';
+        
+        const dateComponents = datePart.split('/');
+        if (dateComponents.length === 3) {
+          // Assume DD/MM/YYYY format (common in Indonesia)
+          const day = parseInt(dateComponents[0]);
+          const month = parseInt(dateComponents[1]) - 1; // Month is 0-indexed
+          const year = parseInt(dateComponents[2]);
+          
+          const timeComponents = timePart.split(':');
+          const hour = parseInt(timeComponents[0]) || 0;
+          const minute = parseInt(timeComponents[1]) || 0;
+          const second = parseInt(timeComponents[2]) || 0;
+          
+          timestamp = new Date(year, month, day, hour, minute, second);
+        } else {
+          throw new Error('Invalid date format');
+        }
+      } else if (timestampStr.includes('-')) {
+        // Format: YYYY-MM-DD HH:MM:SS
+        timestamp = new Date(timestampStr.replace(' ', 'T'));
+      } else {
+        // Try direct parsing
+        timestamp = new Date(timestampStr);
+      }
+      
+      // Validate the parsed timestamp
+      if (isNaN(timestamp.getTime())) {
+        console.warn(`Invalid timestamp format: ${timestampStr}, skipping record`);
+        continue;
+      }
+      
+    } catch (error) {
+      console.warn(`Failed to parse timestamp: ${timestampStr}, skipping record`);
+      continue;
+    }
+
+    // Check if timestamp is within the specified range
     if (timestamp < startDate || timestamp > endDate) continue;
 
     try {
@@ -161,6 +209,7 @@ async function processAndStoreData(
       newRecords++;
     } catch (error) {
       // Ignore duplicate entries
+      console.warn(`Failed to insert record for timestamp ${timestamp.toISOString()}: ${error}`);
     }
   }
 
