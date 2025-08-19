@@ -1,6 +1,6 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Settings } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -93,6 +93,25 @@ export default function LoginPage() {
               </Button>
             </div>
           </form>
+
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Don't have an account?</span>
+              </div>
+            </div>
+            <div className="mt-3 text-center">
+              <Link
+                to="/register"
+                className="text-blue-600 hover:text-blue-500 font-medium"
+              >
+                Register here
+              </Link>
+            </div>
+          </div>
 
           <div className="mt-6">
             <div className="relative">

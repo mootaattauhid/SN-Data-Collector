@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import SNListPage from './pages/SNListPage';
 import MachineDataPage from './pages/MachineDataPage';
 import UserManagementPage from './pages/UserManagementPage';
@@ -56,6 +57,7 @@ function AppRoutes() {
     return (
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
@@ -65,6 +67,7 @@ function AppRoutes() {
     <Layout>
       <Routes>
         <Route path="/login" element={<Navigate to="/" replace />} />
+        <Route path="/register" element={<Navigate to="/" replace />} />
         <Route 
           path="/" 
           element={
