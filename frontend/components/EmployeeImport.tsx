@@ -68,6 +68,42 @@ export default function EmployeeImport({ onClose, onSuccess }: EmployeeImportPro
     reader.readAsText(selectedFile);
   };
 
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    let i = 0;
+
+    while (i < line.length) {
+      const char = line[i];
+      
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          // Escaped quote
+          current += '"';
+          i += 2;
+        } else {
+          // Toggle quote state
+          inQuotes = !inQuotes;
+          i++;
+        }
+      } else if (char === ',' && !inQuotes) {
+        // Field separator
+        result.push(current.trim());
+        current = '';
+        i++;
+      } else {
+        current += char;
+        i++;
+      }
+    }
+    
+    // Add the last field
+    result.push(current.trim());
+    
+    return result;
+  };
+
   const parseCSV = (text: string) => {
     const lines = text.split('\n').filter(line => line.trim());
     if (lines.length < 2) {
@@ -79,11 +115,11 @@ export default function EmployeeImport({ onClose, onSuccess }: EmployeeImportPro
       return;
     }
 
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    const headers = parseCSVLine(lines[0]);
     const data: ImportEmployeeData[] = [];
 
     for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+      const values = parseCSVLine(lines[i]);
       
       if (values.length < 3) continue; // Skip incomplete rows
 
@@ -122,7 +158,8 @@ export default function EmployeeImport({ onClose, onSuccess }: EmployeeImportPro
     const template = [
       'Employee ID,Name,NIK,Department,Position,Email,Phone,Address,Hire Date',
       'EMP001,"John Doe",1234567890123456,"IT","Software Engineer","john@example.com","08123456789","Jl. Example No. 1",2024-01-15',
-      'EMP002,"Jane Smith",9876543210987654,"HR","HR Manager","jane@example.com","08987654321","Jl. Sample No. 2",2024-02-01'
+      'EMP002,"Jane Smith",9876543210987654,"HR","HR Manager","jane@example.com","08987654321","Jl. Sample No. 2",2024-02-01',
+      'EMP003,"Fitri Yanto, S.Si.",1122334455667788,"Research","Research Scientist","fitri@example.com","08111222333","Jl. Research St. 3",2024-03-01'
     ].join('\n');
 
     const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
@@ -155,6 +192,9 @@ export default function EmployeeImport({ onClose, onSuccess }: EmployeeImportPro
                 <p className="text-sm text-blue-700 mt-1">
                   Your CSV file should have the following columns in order:
                   Employee ID, Name, NIK, Department, Position, Email, Phone, Address, Hire Date
+                </p>
+                <p className="text-sm text-blue-700 mt-1">
+                  <strong>Important:</strong> If names contain commas (like "Fitri Yanto, S.Si."), wrap them in double quotes.
                 </p>
                 <Button
                   variant="outline"
