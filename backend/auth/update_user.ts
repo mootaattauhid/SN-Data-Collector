@@ -1,6 +1,7 @@
 import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "~encore/auth";
 import { authDB } from "./db";
+import { employeeDB } from "../employee/db";
 import type { UpdateUserRequest, User } from "./types";
 import * as bcrypt from "bcrypt";
 
@@ -12,6 +13,17 @@ export const updateUser = api<UpdateUserRequest, User>(
     
     if (auth.role !== "super_admin") {
       throw APIError.permissionDenied("Only super admins can update users");
+    }
+
+    // If role is being changed to user or employee ID is being updated, validate employee ID
+    if ((req.role === "user" || req.employeeId !== undefined) && req.employeeId) {
+      const employee = await employeeDB.queryRow`
+        SELECT id FROM employees WHERE employee_id = ${req.employeeId} AND active = true
+      `;
+      
+      if (!employee) {
+        throw APIError.invalidArgument("Employee ID not found or inactive");
+      }
     }
 
     const updates: string[] = [];

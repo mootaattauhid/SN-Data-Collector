@@ -1,6 +1,7 @@
 import { api, APIError } from "encore.dev/api";
 import { getAuthData } from "~encore/auth";
 import { authDB } from "./db";
+import { employeeDB } from "../employee/db";
 import type { CreateUserRequest, User } from "./types";
 import * as bcrypt from "bcrypt";
 
@@ -12,6 +13,17 @@ export const createUser = api<CreateUserRequest, User>(
     
     if (auth.role !== "super_admin") {
       throw APIError.permissionDenied("Only super admins can create users");
+    }
+
+    // If role is user, validate that employee ID exists
+    if (req.role === "user" && req.employeeId) {
+      const employee = await employeeDB.queryRow`
+        SELECT id FROM employees WHERE employee_id = ${req.employeeId} AND active = true
+      `;
+      
+      if (!employee) {
+        throw APIError.invalidArgument("Employee ID not found or inactive");
+      }
     }
 
     const passwordHash = await bcrypt.hash(req.password, 10);

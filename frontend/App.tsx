@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage';
 import SNListPage from './pages/SNListPage';
 import MachineDataPage from './pages/MachineDataPage';
 import UserManagementPage from './pages/UserManagementPage';
+import EmployeeManagementPage from './pages/EmployeeManagementPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -99,6 +100,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute requireSuperAdmin>
               <UserManagementPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/employees" 
+          element={
+            <ProtectedRoute requireSuperAdmin>
+              <EmployeeManagementPage />
             </ProtectedRoute>
           } 
         />

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Database, Settings, Users, LogOut } from 'lucide-react';
+import { Database, Settings, Users, LogOut, UserCheck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 
@@ -16,6 +16,7 @@ export default function Layout({ children }: LayoutProps) {
     ...(user?.role === 'super_admin' ? [
       { name: 'SN Management', href: '/sn-management', icon: Settings },
       { name: 'User Management', href: '/users', icon: Users },
+      { name: 'Employee Management', href: '/employees', icon: UserCheck },
     ] : []),
     { name: 'Machine Data', href: '/machine-data', icon: Database },
   ];

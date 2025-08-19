@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import { useBackend } from '../hooks/useBackend';
 import type { User, CreateUserRequest, UpdateUserRequest } from '~backend/auth/types';
+import type { Employee } from '~backend/employee/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,6 +42,16 @@ export default function UserForm({ user, onClose, onSuccess }: UserFormProps) {
   });
 
   const watchedRole = watch('role');
+
+  // Fetch employees for dropdown
+  const { data: employeeData } = useQuery({
+    queryKey: ['employees'],
+    queryFn: async () => {
+      const response = await backend.employee.listEmployees();
+      return response.employees.filter(emp => emp.active);
+    },
+    enabled: watchedRole === 'user',
+  });
 
   const createMutation = useMutation({
     mutationFn: (data: CreateUserRequest) => backend.auth.createUser(data),
@@ -166,16 +177,24 @@ export default function UserForm({ user, onClose, onSuccess }: UserFormProps) {
 
           {watchedRole === 'user' && (
             <div>
-              <Label htmlFor="employeeId">Employee ID</Label>
-              <Input
-                id="employeeId"
-                {...register('employeeId', { 
-                  required: watchedRole === 'user' ? 'Employee ID is required for users' : false 
-                })}
-                placeholder="Enter employee ID"
-              />
-              {errors.employeeId && (
-                <p className="text-sm text-red-600 mt-1">{errors.employeeId.message}</p>
+              <Label htmlFor="employeeId">Employee</Label>
+              <Select
+                value={watch('employeeId')}
+                onValueChange={(value) => setValue('employeeId', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select employee" />
+                </SelectTrigger>
+                <SelectContent>
+                  {employeeData?.map((employee) => (
+                    <SelectItem key={employee.id} value={employee.employeeId}>
+                      {employee.name} ({employee.employeeId})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {watchedRole === 'user' && !watch('employeeId') && (
+                <p className="text-sm text-red-600 mt-1">Employee selection is required for users</p>
               )}
             </div>
           )}
